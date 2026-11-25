@@ -5,8 +5,7 @@ from uuid import uuid4
 from engine.graph import Task
 
 
-@unittest.skipUnless(os.getenv("TEST_DATABASE_URL"), "Set TEST_DATABASE_URL to a test database")
-class StoreTests(unittest.TestCase):
+class DatabaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from unittest.mock import patch
@@ -19,6 +18,13 @@ class StoreTests(unittest.TestCase):
         cls.store = store
         store.migrate()
 
+    def delete_workflow(self, workflow_id):
+        with self.store.connect() as connection:
+            connection.execute("DELETE FROM workflow_executions WHERE id = %s", (workflow_id,))
+
+
+@unittest.skipUnless(os.getenv("TEST_DATABASE_URL"), "Set TEST_DATABASE_URL to a test database")
+class StoreTests(DatabaseTestCase):
     def test_persists_graph_and_initial_states(self):
         workflow_id = self.store.submit_workflow(
             "example", [Task("child", "process", ("root",)), Task("root", "load", input=None)]
@@ -43,7 +49,3 @@ class StoreTests(unittest.TestCase):
                 "SELECT id FROM workflow_executions WHERE name = %s", (name,)
             ).fetchone()
         self.assertIsNone(row)
-
-    def delete_workflow(self, workflow_id):
-        with self.store.connect() as connection:
-            connection.execute("DELETE FROM workflow_executions WHERE id = %s", (workflow_id,))

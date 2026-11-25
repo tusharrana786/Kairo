@@ -26,3 +26,9 @@ CREATE TABLE IF NOT EXISTS task_dependencies (
 
 CREATE INDEX IF NOT EXISTS task_dependencies_dependents
     ON task_dependencies (workflow_id, depends_on);
+
+ALTER TABLE task_executions ADD COLUMN IF NOT EXISTS redis_dispatch_after timestamptz
+    NOT NULL DEFAULT '-infinity';
+
+CREATE INDEX IF NOT EXISTS task_executions_dispatch
+    ON task_executions (redis_dispatch_after, workflow_id, task_key) WHERE status = 'ready';
