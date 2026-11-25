@@ -1,4 +1,4 @@
-# Durable Workflow Engine
+# Kairo
 
 Build and run durable workflows as directed acyclic graphs (DAGs). The engine is written in Python. PostgreSQL stores execution state, Redis delivers runnable tasks to workers, and React is planned for the dashboard.
 
